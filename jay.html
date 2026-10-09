@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyHub - General Store & Grocery Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .toast-slide { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
+        .pulse-soft { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Bar Announcement -->
+    <div class="bg-slate-900 text-slate-200 text-xs py-1.5 px-4 text-center font-medium flex justify-between items-center sm:px-8">
+        <div class="flex items-center space-x-2 mx-auto sm:mx-0">
+            <span class="inline-block w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+            <span>⚡ Express Grocery Delivery in 30-45 Minutes! Free delivery on orders above ₹499</span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-6 text-[11px]">
+            <span><i class="fa-solid fa-phone text-brand-500 mr-1"></i> Support: +91 98765 43210</span>
+            <span><i class="fa-solid fa-location-dot text-brand-500 mr-1"></i> Local Hub: Sector 4, Central Market</span>
+        </div>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Store Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchTab('store')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-cart-flatbed text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight text-slate-900 leading-none">Daily<span class="text-brand-600">Hub</span></h1>
+                        <p class="text-[10px] text-slate-500 font-semibold tracking-wide uppercase mt-0.5">Groceries & Daily Essentials</p>
+                    </div>
+                </div>
+
+                <!-- Live Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-lg relative">
+                    <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Search milk, spices, snacks, soaps, beverages..." 
+                        class="w-full pl-10 pr-9 py-2 bg-slate-100 hover:bg-slate-50 focus:bg-white text-xs sm:text-sm rounded-full border border-transparent focus:border-brand-500 focus:outline-none transition-all">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    <button onclick="clearSearch()" id="clearSearchBtn" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    
+                    <!-- View Switcher (Customer vs Store Admin) -->
+                    <button onclick="toggleAdminView()" id="adminToggleBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-store text-brand-600" id="adminToggleIcon"></i>
+                        <span id="adminToggleText">Store Manager</span>
+                    </button>
+
+                    <!-- Order History Button -->
+                    <button onclick="switchTab('orders')" class="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition relative flex items-center gap-1.5 font-medium text-xs">
+                        <i class="fa-solid fa-truck-fast text-base"></i>
+                        <span class="hidden md:inline">Track Orders</span>
+                        <span id="activeOrdersBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Cart Drawer Trigger -->
+                    <button onclick="toggleCartDrawer(true)" class="relative p-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl transition flex items-center space-x-2 px-3 border border-brand-200">
+                        <i class="fa-solid fa-basket-shopping text-base"></i>
+                        <span class="font-bold text-xs hidden sm:inline" id="navCartTotal">₹0</span>
+                        <span id="cartBadgeCount" class="bg-brand-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden pb-3">
+                <div class="relative">
+                    <input type="text" id="mobileSearchInput" onkeyup="handleMobileSearch()" placeholder="Search daily needs & groceries..." 
+                        class="w-full pl-9 pr-4 py-2 bg-slate-100 text-xs rounded-full border border-slate-200 focus:outline-none focus:border-brand-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- VIEW 1: PRODUCT CATALOG & STOREFRONT -->
+        <section id="storeView" class="space-y-6">
+            
+            <!-- Hero Promo Banner -->
+            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 sm:p-8 shadow-md">
+                <div class="relative z-10 max-w-xl space-y-2">
+                    <span class="bg-brand-500/30 text-brand-200 text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full border border-brand-400/30 uppercase tracking-wider inline-block">Daily Needs & Grocery Hub</span>
+                    <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">Fresh Pantry Items & Essentials Delivered Fast</h2>
+                    <p class="text-emerald-100 text-xs sm:text-sm">Get top-quality staples, dairy, snacks, and household essentials shipped straight from your neighborhood store.</p>
+                </div>
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 sm:opacity-30 pointer-events-none text-8xl text-emerald-300">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+            </div>
+
+            <!-- Filter Controls Bar -->
+            <div class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked text-brand-600"></i> Browse Categories
+                    </h3>
+                    
+                    <!-- Sorting Dropdown -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-xs font-semibold text-slate-500">Sort By:</label>
+                        <select id="sortSelect" onchange="handleSortChange()" class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500 font-medium">
+                            <option value="popular">Popularity</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Category Pills Horizontal Scroll -->
+                <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none" id="categoryButtonsContainer">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5" id="productsGrid">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- No Products Found State -->
+            <div id="noProductsFound" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
+                <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-3"></i>
+                <h4 class="text-base font-bold text-slate-700">No matching products found</h4>
+                <p class="text-slate-500 text-xs mt-1">Try clearing your search query or selecting a different category.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition">Reset All Filters</button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: CUSTOMER ORDER HISTORY & TRACKING -->
+        <section id="ordersView" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Your Orders & Live Tracking</h2>
+                    <p class="text-xs text-slate-500">Monitor dispatch status, delivery estimate, and order receipts.</p>
+                </div>
+                <button onclick="switchTab('store')" class="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Shopping
+                </button>
+            </div>
+
+            <div id="ordersListContainer" class="space-y-6">
+                <!-- Order Cards dynamically inserted -->
+            </div>
+
+            <!-- Empty Orders State -->
+            <div id="noOrdersState" class="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                    <i class="fa-solid fa-receipt text-2xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">No active orders yet</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">When you place an order, live tracking updates will show up right here.</p>
+                <button onclick="switchTab('store')" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition shadow">Start Shopping</button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: STORE MANAGER / ADMIN DASHBOARD -->
+        <section id="adminView" class="hidden space-y-6">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+                <div>
+                    <span class="text-xs font-bold tracking-widest text-brand-400 uppercase">Shop Administration Portal</span>
+                    <h2 class="text-2xl font-extrabold">Store Management</h2>
+                    <p class="text-xs text-slate-400 mt-1">Manage incoming order fulfillments, stock availability, and catalog items.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="openAddProductModal()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow">
+                        <i class="fa-solid fa-plus"></i> Add New Item
+                    </button>
+                    <button onclick="toggleAdminView()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 transition">
+                        Exit Admin View
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Stats Widget -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Total Catalog Items</p>
+                    <h3 class="text-xl font-bold text-slate-800 mt-1" id="statTotalProducts">0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Pending Fulfillments</p>
+                    <h3 class="text-xl font-bold text-amber-600 mt-1" id="statActiveOrders">0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Total Orders Revenue</p>
+                    <h3 class="text-xl font-bold text-emerald-600 mt-1" id="statTotalRevenue">₹0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs text-slate-500 font-medium">Store Operations</p>
+                    <span class="inline-flex items-center gap-1.5 mt-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Online & Accepting Orders
+                    </span>
+                </div>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="border-b border-slate-200 flex bg-slate-50/50">
+                    <button onclick="switchAdminSubTab('inventory')" id="tabBtnInventory" class="px-6 py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked"></i> Inventory & Stock
+                    </button>
+                    <button onclick="switchAdminSubTab('manageOrders')" id="tabBtnManageOrders" class="px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Incoming Orders Dispatch
+                    </button>
+                </div>
+
+                <!-- Admin Tab 1: Inventory Table -->
+                <div id="adminInventoryTab" class="p-4 sm:p-6 overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 uppercase font-semibold text-[11px] border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Product</th>
+                                <th class="p-3">Category</th>
+                                <th class="p-3">Price</th>
+                                <th class="p-3">Stock Status</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminInventoryTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Admin Tab 2: Orders Fulfillment -->
+                <div id="adminOrdersTab" class="hidden p-4 sm:p-6 space-y-4">
+                    <div id="adminOrdersContainer" class="space-y-4">
+                        <!-- Admin order processing list -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CART DRAWER OVERLAY & PANEL -->
+    <div id="cartDrawerBackdrop" onclick="toggleCartDrawer(false)" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+    
+    <aside id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+        <!-- Cart Header -->
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-basket-shopping text-brand-600 text-xl"></i>
+                <h3 class="font-bold text-slate-800">Your Shopping Basket</h3>
+                <span id="cartDrawerCount" class="bg-brand-100 text-brand-800 text-xs font-bold px-2 py-0.5 rounded-full">0 items</span>
+            </div>
+            <button onclick="toggleCartDrawer(false)" class="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Free Delivery Banner Bar -->
+        <div class="bg-emerald-50 px-4 py-2 border-b border-emerald-100 text-xs text-emerald-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-truck-fast text-emerald-600 mr-1"></i> Free delivery on orders over <strong>₹499</strong></span>
+            <span id="freeShippingStatus" class="font-bold text-emerald-700"></span>
+        </div>
+
+        <!-- Cart Items List -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="cartItemList">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Cart Summary & Checkout Action -->
+        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+            <div class="space-y-1.5 text-xs text-slate-600">
+                <div class="flex justify-between">
+                    <span>Item Subtotal</span>
+                    <span id="cartSubtotal" class="font-semibold text-slate-800">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>GST & Taxes (5%)</span>
+                    <span id="cartTax" class="font-semibold text-slate-800">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Charge</span>
+                    <span id="cartDeliveryFee" class="font-semibold text-slate-800">₹0</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
+                    <span>Grand Total</span>
+                    <span id="cartGrandTotal" class="text-brand-600">₹0</span>
+                </div>
+            </div>
+
+            <button onclick="openCheckoutModal()" id="checkoutBtn" disabled class="w-full py-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition shadow flex items-center justify-center space-x-2">
+                <span>Proceed to Checkout</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative my-8">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-truck-ramp-box text-brand-600"></i> Delivery & Payment
+            </h3>
+            <p class="text-xs text-slate-500 mb-6">Enter your address details and pick a convenient payment method.</p>
+
+            <form id="checkoutForm" onsubmit="handlePlaceOrder(event)" class="space-y-4">
+                <!-- Delivery Info -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                        <input type="text" id="custName" required placeholder="e.g. Rahul Sharma" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number *</label>
+                        <input type="tel" id="custPhone" required placeholder="+91 98765 00000" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Delivery Address *</label>
+                    <textarea id="custAddress" required rows="2" placeholder="House / Flat No., Building name, Street address..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Landmark (Optional)</label>
+                        <input type="text" id="custLandmark" placeholder="Near Temple / Park" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Slot</label>
+                        <select id="custTimeSlot" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500 bg-white">
+                            <option>Express Delivery (30-45 Mins)</option>
+                            <option>Today Evening (6 PM - 8 PM)</option>
+                            <option>Tomorrow Morning (8 AM - 10 AM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Payment Selection -->
+                <div class="pt-2">
+                    <label class="block text-xs font-semibold text-slate-700 mb-2">Payment Method</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="border border-brand-500 bg-brand-50/50 rounded-xl p-2.5 cursor-pointer flex flex-col items-center justify-center text-center hover:bg-brand-50 transition payment-option">
+                            <input type="radio" name="payMethod" value="UPI" checked class="sr-only" onchange="togglePaymentTabs('UPI')">
+                            <i class="fa-solid fa-qrcode text-brand-600 text-lg mb-1"></i>
+                            <span class="text-xs font-bold text-slate-800">UPI / QR Code</span>
+                        </label>
+
+                        <label class="border border-slate-200 rounded-xl p-2.5 cursor-pointer flex flex-col items-center justify-center text-center hover:bg-slate-50 transition payment-option">
+                            <input type="radio" name="payMethod" value="Card" class="sr-only" onchange="togglePaymentTabs('Card')">
+                            <i class="fa-solid fa-credit-card text-blue-600 text-lg mb-1"></i>
+                            <span class="text-xs font-bold text-slate-800">Debit / Credit</span>
+                        </label>
+
+                        <label class="border border-slate-200 rounded-xl p-2.5 cursor-pointer flex flex-col items-center justify-center text-center hover:bg-slate-50 transition payment-option">
+                            <input type="radio" name="payMethod" value="COD" class="sr-only" onchange="togglePaymentTabs('COD')">
+                            <i class="fa-solid fa-hand-holding-dollar text-amber-600 text-lg mb-1"></i>
+                            <span class="text-xs font-bold text-slate-800">Cash on Delivery</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Payment Sub-Panels -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                    
+                    <!-- UPI / QR Panel -->
+                    <div id="payPanelUPI" class="flex items-center space-x-4">
+                        <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex-shrink-0 text-center">
+                            <svg class="w-16 h-16 mx-auto text-slate-800" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v3h-2v-3zm3 3h3v5h-3v-5zm-3 2h2v3h-2v-3zm-3-2h2v5h-2v-5z"/>
+                            </svg>
+                            <span class="text-[9px] text-slate-400 block font-mono">SCAN UPI QR</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">Scan QR Code or enter VPA</p>
+                            <p class="text-slate-500 text-[11px] mt-0.5">Pay using Google Pay, PhonePe, Paytm, or BHIM.</p>
+                            <input type="text" placeholder="e.g. mobile@upi" class="mt-2 w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Card Panel -->
+                    <div id="payPanelCard" class="hidden space-y-2">
+                        <input type="text" placeholder="Card Number (4532 **** **** 8890)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" placeholder="MM/YY" class="px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+                            <input type="password" placeholder="CVV" maxlength="3" class="px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+                        </div>
+                    </div>
+
+                    <!-- COD Panel -->
+                    <div id="payPanelCOD" class="hidden text-slate-600">
+                        <p class="font-semibold text-amber-700"><i class="fa-solid fa-circle-info mr-1"></i> Cash on Delivery</p>
+                        <p class="text-[11px] mt-0.5">Please pay cash or scan UPI directly with driver during doorstep delivery.</p>
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <div>
+                        <span class="text-xs text-slate-500">Total Amount</span>
+                        <h4 class="text-xl font-extrabold text-brand-600" id="checkoutPayableTotal">₹0</h4>
+                    </div>
+                    <button type="submit" id="paySubmitBtn" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow transition flex items-center space-x-2">
+                        <span>Place Order</span>
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAYMENT PROCESSING SIMULATION OVERLAY -->
+    <div id="paymentProcessingModal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-8 text-center space-y-4 shadow-2xl">
+            <div class="relative w-16 h-16 mx-auto">
+                <div class="w-16 h-16 rounded-full border-4 border-slate-100 border-t-brand-600 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-brand-600">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+            </div>
+            <h4 class="text-lg font-bold text-slate-800">Confirming Order...</h4>
+            <p class="text-xs text-slate-500">Transmitting order to DailyHub store team.</p>
+        </div>
+    </div>
+
+    <!-- ADMIN ADD PRODUCT MODAL -->
+    <div id="addProductModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeAddProductModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Add New Item to Shop</h3>
+            <p class="text-xs text-slate-500 mb-4">Add a new item to your online inventory list.</p>
+
+            <form id="addProductForm" onsubmit="handleAddNewProduct(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Item Title</label>
+                    <input type="text" id="newProdTitle" required placeholder="e.g. Fresh Brown Eggs" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+                        <select id="newProdCategory" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white">
+                            <option value="Dairy & Bakery">Dairy & Bakery</option>
+                            <option value="Snacks & Beverages">Snacks & Beverages</option>
+                            <option value="Staples & Spices">Staples & Spices</option>
+                            <option value="Personal Care">Personal Care</option>
+                            <option value="Household Essentials">Household Essentials</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Unit / Pack</label>
+                        <input type="text" id="newProdUnit" required placeholder="e.g. 6 pcs / 500g" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Price (₹)</label>
+                        <input type="number" step="1" id="newProdPrice" required placeholder="75" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Unsplash Image URL</label>
+                        <input type="url" id="newProdImg" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddProductModal()" class="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        /* ==========================================================================
+           SEED DATA & INITIAL STATE
+           ========================================================================== */
+        const initialProducts = [
+            { id: 1, title: 'Amul Taaza Toned Milk', category: 'Dairy & Bakery', price: 27, oldPrice: 30, unit: '500 ml Pouch', inStock: true, rating: 4.8, badge: 'Daily Fresh', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&q=80' },
+            { id: 2, title: 'Britannia Whole Wheat Bread', category: 'Dairy & Bakery', price: 45, oldPrice: 50, unit: '400g Pack', inStock: true, rating: 4.6, badge: 'Bestseller', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80' },
+            { id: 3, title: 'Fortune Sunlite Sunflower Oil', category: 'Staples & Spices', price: 145, oldPrice: 165, unit: '1 Litre Pouch', inStock: true, rating: 4.7, badge: '12% OFF', img: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80' },
+            { id: 4, title: 'Lays Magic Masala Chips', category: 'Snacks & Beverages', price: 20, oldPrice: 20, unit: '50g Pack', inStock: true, rating: 4.9, badge: 'Hot', img: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400&q=80' },
+            { id: 5, title: 'Tata Premium Tea Bags', category: 'Snacks & Beverages', price: 180, oldPrice: 210, unit: '100 Bags', inStock: true, rating: 4.5, badge: '', img: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&q=80' },
+            { id: 6, title: 'Surf Excel Easy Wash Powder', category: 'Household Essentials', price: 135, oldPrice: 150, unit: '1 kg Pack', inStock: true, rating: 4.8, badge: '', img: 'https://images.unsplash.com/photo-1585832770485-e68a5fc88280?w=400&q=80' },
+            { id: 7, title: 'Dettol Original Bathing Soap', category: 'Personal Care', price: 160, oldPrice: 180, unit: 'Buy 3 Get 1 Free', inStock: true, rating: 4.9, badge: 'Value Pack', img: 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&q=80' },
+            { id: 8, title: 'Aashirvaad Shuddh Chakki Atta', category: 'Staples & Spices', price: 240, oldPrice: 270, unit: '5 kg Bag', inStock: true, rating: 4.8, badge: 'Essential', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80' },
+            { id: 9, title: 'Coca-Cola Soft Drink', category: 'Snacks & Beverages', price: 40, oldPrice: 45, unit: '750 ml Bottle', inStock: false, rating: 4.4, badge: 'Out of Stock', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400&q=80' },
+            { id: 10, title: 'Colgate Strong Toothpaste', category: 'Personal Care', price: 95, oldPrice: 110, unit: '150g Tube', inStock: true, rating: 4.7, badge: '', img: 'https://images.unsplash.com/photo-1559598467-f8b76c8155d0?w=400&q=80' }
+        ];
+
+        const categories = ['All', 'Snacks & Beverages', 'Dairy & Bakery', 'Staples & Spices', 'Personal Care', 'Household Essentials'];
+
+        // Persistent State
+        let products = JSON.parse(localStorage.getItem('dailyhub_products')) || initialProducts;
+        let cart = JSON.parse(localStorage.getItem('dailyhub_cart')) || [];
+        let orders = JSON.parse(localStorage.getItem('dailyhub_orders')) || [];
+
+        let activeCategory = 'All';
+        let searchQuery = '';
+        let sortBy = 'popular';
+        let isAdminMode = false;
+
+        /* ==========================================================================
+           APP INITIALIZATION
+           ========================================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderProducts();
+            updateCartUI();
+            updateActiveOrdersBadge();
+            saveState();
+        });
+
+        function saveState() {
+            localStorage.setItem('dailyhub_products', JSON.stringify(products));
+            localStorage.setItem('dailyhub_cart', JSON.stringify(cart));
+            localStorage.setItem('dailyhub_orders', JSON.stringify(orders));
+        }
+
+        /* ==========================================================================
+           TOAST NOTIFICATIONS
+           ========================================================================== */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-blue-500';
+            
+            toast.className = `toast-slide flex items-center space-x-2 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl pointer-events-auto border border-slate-700`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        /* ==========================================================================
+           NAVIGATION & VIEW CONTROLS
+           ========================================================================== */
+        function switchTab(tab) {
+            document.getElementById('storeView').classList.add('hidden');
+            document.getElementById('ordersView').classList.add('hidden');
+            document.getElementById('adminView').classList.add('hidden');
+
+            if (tab === 'store') {
+                document.getElementById('storeView').classList.remove('hidden');
+            } else if (tab === 'orders') {
+                document.getElementById('ordersView').classList.remove('hidden');
+                renderCustomerOrders();
+            } else if (tab === 'admin') {
+                document.getElementById('adminView').classList.remove('hidden');
+                renderAdminInventory();
+                renderAdminOrders();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleAdminView() {
+            isAdminMode = !isAdminMode;
+            const btn = document.getElementById('adminToggleBtn');
+            const text = document.getElementById('adminToggleText');
+
+            if (isAdminMode) {
+                btn.classList.replace('bg-slate-100', 'bg-brand-600');
+                btn.classList.replace('text-slate-700', 'text-white');
+                text.innerText = "Exit Admin";
+                switchTab('admin');
+                showToast("Switched to Store Manager Mode");
+            } else {
+                btn.classList.replace('bg-brand-600', 'bg-slate-100');
+                btn.classList.replace('text-white', 'text-slate-700');
+                text.innerText = "Store Manager";
+                switchTab('store');
+                showToast("Switched to Customer View");
+            }
+        }
+
+        /* ==========================================================================
+           PRODUCT CATALOG RENDER & FILTERS
+           ========================================================================== */
+        function renderCategories() {
+            const container = document.getElementById('categoryButtonsContainer');
+            container.innerHTML = categories.map(cat => {
+                const isActive = cat === activeCategory;
+                const activeClass = isActive 
+                    ? 'bg-brand-600 text-white shadow font-bold' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-medium';
+                return `<button onclick="filterCategory('${cat}')" class="px-4 py-2 text-xs rounded-xl whitespace-nowrap transition-all ${activeClass}">${cat}</button>`;
+            }).join('');
+        }
+
+        function filterCategory(cat) {
+            activeCategory = cat;
+            renderCategories();
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', searchQuery === '');
+            renderProducts();
+        }
+
+        function handleMobileSearch() {
+            searchQuery = document.getElementById('mobileSearchInput').value.trim().toLowerCase();
+            renderProducts();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            searchQuery = '';
+            renderProducts();
+        }
+
+        function handleSortChange() {
+            sortBy = document.getElementById('sortSelect').value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            activeCategory = 'All';
+            clearSearch();
+            renderCategories();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const noFound = document.getElementById('noProductsFound');
+
+            let filtered = products.filter(p => {
+                const matchCat = activeCategory === 'All' || p.category === activeCategory;
+                const matchSearch = p.title.toLowerCase().includes(searchQuery) || p.category.toLowerCase().includes(searchQuery);
+                return matchCat && matchSearch;
+            });
+
+            if (sortBy === 'price-low') filtered.sort((a, b) => a.price - b.price);
+            if (sortBy === 'price-high') filtered.sort((a, b) => b.price - a.price);
+            if (sortBy === 'popular') filtered.sort((a, b) => b.rating - a.rating);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noFound.classList.remove('hidden');
+                return;
+            } else {
+                noFound.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(product => {
+                const cartItem = cart.find(ci => ci.product.id === product.id);
+                const quantity = cartItem ? cartItem.quantity : 0;
+
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200 p-3 flex flex-col justify-between hover:shadow-lg transition duration-200 group">
+                    <div>
+                        <!-- Product Image -->
+                        <div class="relative w-full h-36 bg-slate-100 rounded-xl overflow-hidden mb-3">
+                            <img src="${product.img || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80'}" 
+                                 alt="${product.title}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                 onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80'">
+                            ${product.badge ? `<span class="absolute top-2 left-2 bg-brand-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">${product.badge}</span>` : ''}
+                        </div>
+
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">${product.category}</span>
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-800 line-clamp-2 mt-0.5">${product.title}</h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${product.unit}</p>
+                    </div>
+
+                    <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-baseline space-x-1">
+                                <span class="text-sm sm:text-base font-extrabold text-slate-900">₹${product.price}</span>
+                                ${product.oldPrice ? `<span class="text-[10px] text-slate-400 line-through">₹${product.oldPrice}</span>` : ''}
+                            </div>
+                            <span class="text-[10px] font-semibold ${product.inStock ? 'text-emerald-600' : 'text-rose-500'}">
+                                ${product.inStock ? 'In Stock' : 'Out of Stock'}
+                            </span>
+                        </div>
+
+                        <!-- Add/Quantity Counter Controls -->
+                        ${!product.inStock ? `
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">Unavailable</span>
+                        ` : quantity > 0 ? `
+                            <div class="flex items-center space-x-1 bg-brand-600 text-white rounded-xl p-1 shadow">
+                                <button onclick="updateQuantity(${product.id}, -1)" class="w-6 h-6 rounded-lg hover:bg-brand-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-minus"></i></button>
+                                <span class="text-xs font-bold px-1">${quantity}</span>
+                                <button onclick="updateQuantity(${product.id}, 1)" class="w-6 h-6 rounded-lg hover:bg-brand-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        ` : `
+                            <button onclick="addToCart(${product.id})" class="px-3 py-1.5 bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 text-xs font-bold rounded-xl transition flex items-center space-x-1">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Add</span>
+                            </button>
+                        `}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================================
+           CART OPERATIONS & UI UPDATES
+           ========================================================================== */
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || !product.inStock) return;
+
+            const existing = cart.find(ci => ci.product.id === productId);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ product, quantity: 1 });
+            }
+            saveState();
+            updateCartUI();
+            renderProducts();
+            showToast(`Added ${product.title} to basket`);
+        }
+
+        function updateQuantity(productId, change) {
+            const index = cart.findIndex(ci => ci.product.id === productId);
+            if (index > -1) {
+                cart[index].quantity += change;
+                if (cart[index].quantity <= 0) {
+                    cart.splice(index, 1);
+                }
+            }
+            saveState();
+            updateCartUI();
+            renderProducts();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(ci => ci.product.id !== productId);
+            saveState();
+            updateCartUI();
+            renderProducts();
+        }
+
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, ci) => sum + ci.quantity, 0);
+            const subtotal = cart.reduce((sum, ci) => sum + (ci.product.price * ci.quantity), 0);
+            const tax = Math.round(subtotal * 0.05);
+            const deliveryFee = subtotal >= 499 || subtotal === 0 ? 0 : 30;
+            const grandTotal = subtotal + tax + deliveryFee;
+
+            document.getElementById('cartBadgeCount').innerText = totalCount;
+            document.getElementById('navCartTotal').innerText = `₹${grandTotal}`;
+            document.getElementById('cartDrawerCount').innerText = `${totalCount} items`;
+
+            // Free Shipping threshold check
+            const freeNotice = document.getElementById('freeShippingStatus');
+            if (subtotal >= 499) {
+                freeNotice.innerText = "FREE Delivery Unlocked!";
+                freeNotice.className = "font-bold text-emerald-700";
+            } else {
+                const remaining = 499 - subtotal;
+                freeNotice.innerText = `Add ₹${remaining} more`;
+                freeNotice.className = "font-bold text-amber-700";
+            }
+
+            // Drawer Items List
+            const list = document.getElementById('cartItemList');
+            if (cart.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-16 text-slate-400">
+                        <i class="fa-solid fa-basket-shopping text-4xl mb-2"></i>
+                        <p class="text-xs font-semibold">Your basket is empty</p>
+                        <p class="text-[11px] mt-0.5">Explore our fresh catalog to add groceries!</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div class="flex items-center space-x-3">
+                            <img src="${item.product.img}" alt="" class="w-10 h-10 object-cover rounded-lg border border-slate-200">
+                            <div>
+                                <h5 class="font-bold text-xs text-slate-800 line-clamp-1">${item.product.title}</h5>
+                                <p class="text-[11px] text-slate-500">₹${item.product.price} / unit</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-0.5">
+                                <button onclick="updateQuantity(${item.product.id}, -1)" class="w-5 h-5 text-slate-600 hover:bg-slate-100 rounded flex items-center justify-center text-xs"><i class="fa-solid fa-minus"></i></button>
+                                <span class="text-xs font-bold px-1">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.product.id}, 1)" class="w-5 h-5 text-slate-600 hover:bg-slate-100 rounded flex items-center justify-center text-xs"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 w-12 text-right">₹${item.product.price * item.quantity}</span>
+                            <button onclick="removeFromCart(${item.product.id})" class="text-slate-400 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Summary Totals
+            document.getElementById('cartSubtotal').innerText = `₹${subtotal}`;
+            document.getElementById('cartTax').innerText = `₹${tax}`;
+            document.getElementById('cartDeliveryFee').innerText = deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`;
+            document.getElementById('cartGrandTotal').innerText = `₹${grandTotal}`;
+            document.getElementById('checkoutPayableTotal').innerText = `₹${grandTotal}`;
+
+            document.getElementById('checkoutBtn').disabled = cart.length === 0;
+        }
+
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cartDrawer');
+            const backdrop = document.getElementById('cartDrawerBackdrop');
+
+            if (open) {
+                backdrop.classList.remove('hidden');
+                setTimeout(() => drawer.classList.remove('translate-x-full'), 10);
+            } else {
+                drawer.classList.add('translate-x-full');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        }
+
+        /* ==========================================================================
+           CHECKOUT & ORDER PLACEMENT
+           ========================================================================== */
+        function openCheckoutModal() {
+            toggleCartDrawer(false);
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        function togglePaymentTabs(method) {
+            document.getElementById('payPanelUPI').classList.add('hidden');
+            document.getElementById('payPanelCard').classList.add('hidden');
+            document.getElementById('payPanelCOD').classList.add('hidden');
+
+            if (method === 'UPI') document.getElementById('payPanelUPI').classList.remove('hidden');
+            if (method === 'Card') document.getElementById('payPanelCard').classList.remove('hidden');
+            if (method === 'COD') document.getElementById('payPanelCOD').classList.remove('hidden');
+        }
+
+        function handlePlaceOrder(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const address = document.getElementById('custAddress').value;
+            const landmark = document.getElementById('custLandmark').value;
+            const timeSlot = document.getElementById('custTimeSlot').value;
+            const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+
+            closeCheckoutModal();
+            document.getElementById('paymentProcessingModal').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('paymentProcessingModal').classList.add('hidden');
+
+                const subtotal = cart.reduce((sum, ci) => sum + (ci.product.price * ci.quantity), 0);
+                const tax = Math.round(subtotal * 0.05);
+                const deliveryFee = subtotal >= 499 ? 0 : 30;
+                const grandTotal = subtotal + tax + deliveryFee;
+
+                const newOrder = {
+                    id: 'DH-' + Math.floor(100000 + Math.random() * 900000),
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    customerName: name,
+                    phone: phone,
+                    address: address + (landmark ? ` (Near ${landmark})` : ''),
+                    timeSlot: timeSlot,
+                    items: [...cart],
+                    totalAmount: grandTotal,
+                    paymentMethod: payMethod,
+                    paymentStatus: payMethod === 'COD' ? 'Pending (COD)' : 'Paid Online',
+                    orderStatus: 'Order Placed',
+                    driverName: 'Vikram Singh',
+                    driverPhone: '+91 98112 33445'
+                };
+
+                orders.unshift(newOrder);
+                cart = [];
+                
+                saveState();
+                updateCartUI();
+                renderProducts();
+                updateActiveOrdersBadge();
+
+                showToast(`Order #${newOrder.id} placed successfully!`);
+                switchTab('orders');
+            }, 1800);
+        }
+
+        /* ==========================================================================
+           CUSTOMER ORDER TRACKING RENDER
+           ========================================================================== */
+        function renderCustomerOrders() {
+            const container = document.getElementById('ordersListContainer');
+            const noOrders = document.getElementById('noOrdersState');
+
+            if (orders.length === 0) {
+                container.innerHTML = '';
+                noOrders.classList.remove('hidden');
+                return;
+            } else {
+                noOrders.classList.add('hidden');
+            }
+
+            container.innerHTML = orders.map(order => {
+                const steps = ['Order Placed', 'Packed', 'Out for Delivery', 'Delivered'];
+                const currentStepIdx = steps.indexOf(order.orderStatus);
+
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-mono font-bold text-base text-slate-900">#${order.id}</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${order.orderStatus === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                    ${order.orderStatus}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">Placed at ${order.date} • ${order.items.length} Items • Total: <strong>₹${order.totalAmount}</strong> (${order.paymentMethod})</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-semibold text-slate-700 block">${order.customerName}</span>
+                            <span class="text-[11px] text-slate-400 block truncate max-w-xs">${order.address}</span>
+                        </div>
+                    </div>
+
+                    <!-- Step Tracker -->
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-4 text-center text-[11px] font-bold text-slate-600">
+                            <div class="${currentStepIdx >= 0 ? 'text-brand-600' : 'text-slate-400'}">1. Placed</div>
+                            <div class="${currentStepIdx >= 1 ? 'text-brand-600' : 'text-slate-400'}">2. Packed</div>
+                            <div class="${currentStepIdx >= 2 ? 'text-brand-600' : 'text-slate-400'}">3. Out for Delivery</div>
+                            <div class="${currentStepIdx >= 3 ? 'text-brand-600' : 'text-slate-400'}">4. Delivered</div>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+                            <div class="bg-brand-500 h-full transition-all duration-500" style="width: ${(currentStepIdx + 1) * 25}%"></div>
+                        </div>
+                    </div>
+
+                    ${order.orderStatus === 'Out for Delivery' ? `
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                                <i class="fa-solid fa-motorcycle"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-emerald-900">Delivery Partner Dispatched</h5>
+                                <p class="text-[10px] text-emerald-700">${order.driverName} (${order.driverPhone})</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg pulse-soft">On the way</span>
+                    </div>
+                    ` : ''}
+
+                    <details class="text-xs text-slate-600 border-t border-slate-100 pt-3">
+                        <summary class="font-bold cursor-pointer hover:text-brand-600 flex items-center justify-between">
+                            <span>Item Breakdown</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                        </summary>
+                        <div class="mt-2 space-y-1.5">
+                            ${order.items.map(ci => `
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
+                                    <span class="font-medium">${ci.product.title} (x${ci.quantity})</span>
+                                    <span class="font-bold text-slate-800">₹${ci.product.price * ci.quantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </details>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function updateActiveOrdersBadge() {
+            const active = orders.filter(o => o.orderStatus !== 'Delivered').length;
+            const badge = document.getElementById('activeOrdersBadge');
+            if (active > 0) {
+                badge.innerText = active;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        /* ==========================================================================
+           ADMIN / STORE MANAGER LOGIC
+           ========================================================================== */
+        function switchAdminSubTab(tab) {
+            if (tab === 'inventory') {
+                document.getElementById('adminInventoryTab').classList.remove('hidden');
+                document.getElementById('adminOrdersTab').classList.add('hidden');
+                document.getElementById('tabBtnInventory').className = 'px-6 py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2';
+                document.getElementById('tabBtnManageOrders').className = 'px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2';
+            } else {
+                document.getElementById('adminInventoryTab').classList.add('hidden');
+                document.getElementById('adminOrdersTab').classList.remove('hidden');
+                document.getElementById('tabBtnManageOrders').className = 'px-6 py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2';
+                document.getElementById('tabBtnInventory').className = 'px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2';
+            }
+        }
+
+        function updateAdminStats() {
+            document.getElementById('statTotalProducts').innerText = products.length;
+            document.getElementById('statActiveOrders').innerText = orders.filter(o => o.orderStatus !== 'Delivered').length;
+            const rev = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+            document.getElementById('statTotalRevenue').innerText = `₹${rev}`;
+        }
+
+        function renderAdminInventory() {
+            const tbody = document.getElementById('adminInventoryTableBody');
+            tbody.innerHTML = products.map(prod => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-bold text-slate-800 flex items-center space-x-2">
+                        <img src="${prod.img}" class="w-8 h-8 object-cover rounded-lg border border-slate-200">
+                        <span>${prod.title}</span>
+                    </td>
+                    <td class="p-3">${prod.category}</td>
+                    <td class="p-3 font-bold text-slate-900">₹${prod.price}</td>
+                    <td class="p-3">
+                        <button onclick="toggleStockStatus(${prod.id})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${prod.inStock ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${prod.inStock ? 'In Stock' : 'Out of Stock'}
+                        </button>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteAdminProduct(${prod.id})" class="text-rose-500 hover:text-rose-700 font-bold text-xs"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            updateAdminStats();
+        }
+
+        function toggleStockStatus(id) {
+            const prod = products.find(p => p.id === id);
+            if (prod) {
+                prod.inStock = !prod.inStock;
+                saveState();
+                renderAdminInventory();
+                renderProducts();
+                showToast(`Stock updated for ${prod.title}`);
+            }
+        }
+
+        function deleteAdminProduct(id) {
+            products = products.filter(p => p.id !== id);
+            saveState();
+            renderAdminInventory();
+            renderProducts();
+            showToast("Item removed from catalog", "info");
+        }
+
+        function renderAdminOrders() {
+            const container = document.getElementById('adminOrdersContainer');
+            if (orders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No customer orders recorded yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-sm text-slate-900">#${order.id}</span>
+                            <span class="text-xs text-slate-500">(${order.date})</span>
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">₹${order.totalAmount}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">Customer: <strong>${order.customerName}</strong> (${order.phone})</p>
+                        <p class="text-xs text-slate-500 truncate max-w-md">${order.address}</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="text-xs font-bold text-slate-700">Dispatch Status:</label>
+                        <select onchange="updateOrderStatus('${order.id}', this.value)" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300 bg-white">
+                            <option value="Order Placed" ${order.orderStatus === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
+                            <option value="Packed" ${order.orderStatus === 'Packed' ? 'selected' : ''}>2. Packed</option>
+                            <option value="Out for Delivery" ${order.orderStatus === 'Out for Delivery' ? 'selected' : ''}>3. Out for Delivery</option>
+                            <option value="Delivered" ${order.orderStatus === 'Delivered' ? 'selected' : ''}>4. Delivered</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+            updateAdminStats();
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.orderStatus = newStatus;
+                saveState();
+                updateActiveOrdersBadge();
+                updateAdminStats();
+                showToast(`Order #${order.id} status updated to ${newStatus}`);
+            }
+        }
+
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('hidden');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.add('hidden');
+        }
+
+        function handleAddNewProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('newProdTitle').value;
+            const category = document.getElementById('newProdCategory').value;
+            const unit = document.getElementById('newProdUnit').value;
+            const price = parseFloat(document.getElementById('newProdPrice').value);
+            const img = document.getElementById('newProdImg').value || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
+
+            const newProd = {
+                id: Date.now(),
+                title,
+                category,
+                unit,
+                price,
+                oldPrice: price + 10,
+                inStock: true,
+                rating: 5.0,
+                badge: 'NEW',
+                img
+            };
+
+            products.unshift(newProd);
+            saveState();
+            closeAddProductModal();
+            renderAdminInventory();
+            renderProducts();
+            document.getElementById('addProductForm').reset();
+            showToast("New item added to store catalog!");
+        }
+    </script>
+</body>
+</html>
